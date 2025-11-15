@@ -22,6 +22,9 @@ public:
         ERR,     // Error
         ID,      // ID
         LE,
+        LEEQ,
+        GR,
+        GREQ,
         FN,
         ENDFUN,
         RETURN,
@@ -40,15 +43,18 @@ public:
         COMA,
         TRUE,
         FALSE,
-        LBRACE,
-        RBRACE,
+        LCBRACE,
+        RCBRACE,
         DDOTS,
         STRING,
         EXCLAM,
         MUT,
         LET,
         ARROW,
-        AMP
+        AMP,
+        LBRACE,
+        RBRACE
+
 
     };
 

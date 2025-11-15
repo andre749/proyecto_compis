@@ -57,15 +57,18 @@ int main(int argc, const char* argv[]) {
     Typechecker tc;
 
     tc.generar(program);
+    cout<<endl;
+    cout<<"ids: tipos"<<endl;
     for(auto [v,t] :tc.tipos){
         cout<<v<<": "<<t<<endl;
     }
+    cout<<endl;
+    cout<<"funciones: variables"<<endl;
     for(auto [v,t] :tc.vars_per_funct){
         cout<<v<<": "<<t<<endl;
     }
     GenCodeVisitor codigo(outfile);
     codigo.tc=&tc;
-
     codigo.generar(program);
     outfile.close();
     

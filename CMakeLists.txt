@@ -16,4 +16,5 @@ add_executable(Miniproyecto2025_2
         token.cpp
         token.h
         visitor.cpp
-        visitor.h)
+        visitor.h
+        environment.h)

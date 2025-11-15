@@ -5,6 +5,7 @@
 #include <vector>
 #include <unordered_map>
 #include <string>
+#include "environment.h"
 using namespace std;
 
 class BinaryExp;
@@ -34,10 +35,14 @@ public:
     virtual string visit(AssignStm* stm) = 0;
     virtual string visit(Body* body) = 0;
     virtual string visit(VarDec* vd) = 0;
-    virtual string visit(FcallExp* fcall) = 0;
+    virtual string visit(FcallExp* stm) = 0;
     virtual string visit(ReturnStm* r) = 0;
     virtual string visit(FunDec* fd) = 0;
     virtual string visit(strExp* str) = 0;
+    virtual string visit(FcallStm* stm) =0;
+    virtual string visit(arrExp* arr) =0;
+    virtual string visit(accesExp* exp) = 0;
+    virtual string visit(AssignPStm* stm) =0;
 
 };
 class Typechecker : public Visitor {
@@ -47,7 +52,6 @@ public:
     unordered_map<string, string> tipos;
     unordered_map<string, int> vars_per_funct;
     int locales;
-
     string nombreFuncion;
     string visit(BinaryExp* exp) override;
     string visit(NumberExp* exp) override;
@@ -56,6 +60,8 @@ public:
     string visit(PrintStm* stm) override;
     string visit(AssignStm* stm) override;
     string visit(WhileStm* stm) override;
+    string visit(FcallStm* stm) override;
+
     string visit(IfStm* stm) override;
     string visit(Body* body) override;
     string visit(VarDec* vd) override;
@@ -63,6 +69,11 @@ public:
     string visit(ReturnStm* r) override;
     string visit(FunDec* fd) override;
     string visit(strExp* str) override;
+    string visit(arrExp* str) override;
+    string visit(accesExp* exp) override;
+    string visit(AssignPStm* stm) override;
+
+
 
 };
 
@@ -72,7 +83,7 @@ private:
 public:
     GenCodeVisitor(std::ostream& out) : out(out) {}
     int generar(Program* program);
-    unordered_map<string, int> memoria;
+    Environment<int> memoria;
     unordered_map<string, bool> memoriaGlobal;
     Typechecker* tc;
 
@@ -94,6 +105,11 @@ public:
     string visit(ReturnStm* r) override;
     string visit(FunDec* fd) override;
     string visit(strExp* str) override;
+    string visit(FcallStm* stm) override;
+    string visit(arrExp* arr) override;
+    string visit(accesExp* exp) override;
+    string visit(AssignPStm* stm) override;
+
 
 };
 

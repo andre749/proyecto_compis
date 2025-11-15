@@ -17,7 +17,10 @@ enum BinaryOp {
     MUL_OP, 
     DIV_OP,
     POW_OP,
-    LE_OP
+    LE_OP,
+    GR_OP,
+    GREQ_OP,
+    LEEQ_OP
 };
 
 // Clase abstracta Exp
@@ -46,6 +49,26 @@ public:
     ~strExp();
     string accept(Visitor* visitor);
 
+};
+
+
+class arrExp:public Exp{
+public:
+    string tipo;
+    list<Exp*> elements;
+    arrExp(){};
+    ~arrExp(){};
+    string accept(Visitor* visitor);
+
+};
+
+class accesExp:public Exp{
+public:
+    string variable;
+    list<Exp*> indexes;
+    accesExp(){};
+    ~accesExp(){};
+    string accept(Visitor* visitor);
 };
 // Expresión numérica
 class NumberExp : public Exp {
@@ -124,6 +147,15 @@ public:
     string accept(Visitor* visitor);
 };
 
+class AssignPStm: public Stm {
+public:
+    accesExp* arr;
+    Exp* e;
+    AssignPStm(){};
+    ~AssignPStm(){};
+    string accept(Visitor* visitor);
+};
+
 class PrintStm: public Stm {
 public:
     Exp* e;
@@ -143,6 +175,16 @@ public:
     ReturnStm(){};
     ~ReturnStm(){};
     string accept(Visitor* visitor);
+};
+
+class FcallStm: public Stm {
+public:
+    string nombre;
+    vector<Exp*> argumentos;
+    string accept(Visitor* visitor);
+    FcallStm(){};
+    ~FcallStm(){};
+
 };
 
 class FcallExp: public Exp {

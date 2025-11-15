@@ -47,13 +47,15 @@ ostream& operator<<(ostream& outs, const Token& tok) {
         case Token::ELSE:    outs << "TOKEN(ELSE, \""    << tok.text << "\")"; break;
         case Token::VAR:    outs << "TOKEN(VAR, \""    << tok.text << "\")"; break;
         case Token::COMA:    outs << "TOKEN(COMA, \""    << tok.text << "\")"; break;
-        case Token::LBRACE:    outs << "TOKEN(RBRACE, \""    << tok.text << "\")"; break;
-        case Token::RBRACE:    outs << "TOKEN(LBRACE, \""    << tok.text << "\")"; break;
+        case Token::LCBRACE:    outs << "TOKEN(RCBRACE, \"" << tok.text << "\")"; break;
+        case Token::RCBRACE:    outs << "TOKEN(LCBRACE, \"" << tok.text << "\")"; break;
         case Token::DDOTS:    outs << "TOKEN(DDOTS, \""    << tok.text << "\")"; break;
         case Token::STRING:    outs << "TOKEN(STRING, \""    << tok.text << "\")"; break;
         case Token::EXCLAM:    outs << "TOKEN(EXCLAM, \""    << tok.text << "\")"; break;
         case Token::MUT:    outs << "TOKEN(MUT, \""    << tok.text << "\")"; break;
         case Token::LET:    outs << "TOKEN(LET, \""    << tok.text << "\")"; break;
+        case Token::RBRACE:    outs << "TOKEN(RBRACE, \""    << tok.text << "\")"; break;
+        case Token::LBRACE:    outs << "TOKEN(LBRACE, \""    << tok.text << "\")"; break;
 
 
         case Token::FN:    outs << "TOKEN(FUN, \""    << tok.text << "\")"; break;

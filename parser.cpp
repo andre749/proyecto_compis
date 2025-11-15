@@ -77,6 +77,7 @@ Program* Parser::parseProgram() {
 VarDec* Parser::parseVarDec(){
     VarDec* vd = new VarDec();
     match(Token::LET);
+    match(Token::LPAREN);
     match(Token::MUT);
     match(Token::ID);
     vd->vars.push_back(previous->text);
@@ -86,10 +87,11 @@ VarDec* Parser::parseVarDec(){
         vd->type = previous->text;
     }else
         vd->type="undefined";
-//    while(match(Token::COMA)) {
-//        match(Token::ID);
-//        vd->vars.push_back(previous->text);
-//    }
+    while(match(Token::COMA)) {
+        match(Token::ID);
+        vd->vars.push_back(previous->text);
+    }
+    match(Token::RPAREN);
     match(Token::SEMICOL);
     return vd;
 }
@@ -104,8 +106,8 @@ FunDec *Parser::parseFunDec() {
         while(match(Token::ID)) {
             fd->Pnombres.push_back(previous->text);
             match(Token::DDOTS);
-            fd->Ptipos.push_back(previous->text);
             match(Token::ID);
+            fd->Ptipos.push_back(previous->text);
             match(Token::COMA);
         }
     }
@@ -117,9 +119,9 @@ FunDec *Parser::parseFunDec() {
         fd->tipo = "void";
 
     }
-    match(Token::LBRACE);
+    match(Token::LCBRACE);
     fd->cuerpo = parseBody();
-    match(Token::RBRACE);
+    match(Token::RCBRACE);
     return fd;
 }
 
@@ -135,7 +137,7 @@ Body* Parser::parseBody(){
         }
     }
     b->StmList.push_back(parseStm());
-    while(!check(Token::RBRACE)) {
+    while(!check(Token::RCBRACE)) {
         b->StmList.push_back(parseStm());
     }
     return b;
@@ -144,17 +146,43 @@ Body* Parser::parseBody(){
 Stm* Parser::parseStm() {
     Stm* a;
     Exp* e;
-    string variable;
+    string nom;
     Body* tb = nullptr;
     Body* fb = nullptr;
     if(match(Token::ID)){
-        variable = previous->text;
-        match(Token::ASSIGN);
-        e = parseCE();
-
-        match(Token::SEMICOL);
-
-        return new AssignStm(variable,e);
+        nom = previous->text;
+        if(match(Token::LPAREN)){
+            FcallStm* f=new FcallStm();
+            f->nombre=nom;
+            while(!match(Token::RPAREN)){
+                f->argumentos.push_back(parseCE());
+                match(Token::COMA);
+            }
+            match(Token::SEMICOL);
+            return f;
+        }
+        else if(match(Token::LBRACE)){
+            AssignPStm* stm= new AssignPStm();
+            accesExp* acc= new accesExp();
+            acc->variable=nom;
+            acc->indexes.push_back(parseCE());
+            match(Token::RBRACE);
+            while(match(Token::LBRACE)){
+                acc->indexes.push_back(parseCE());
+                match(Token::RBRACE);
+            }
+            stm->arr=acc;
+            match(Token::ASSIGN);
+            stm->e=parseCE();
+            match(Token::SEMICOL);
+            return stm;
+        }
+        else {
+            match(Token::ASSIGN);
+            e = parseCE();
+            match(Token::SEMICOL);
+            return new AssignStm(nom, e);
+        }
     }
     else if(match(Token::PRINT)){
         match(Token::EXCLAM);
@@ -178,28 +206,28 @@ Stm* Parser::parseStm() {
     }
     else if (match(Token::IF)) {
         e = parseCE();
-        if (!match(Token::LBRACE)) {
+        if (!match(Token::LCBRACE)) {
             cout << "Error: se esperaba '{' después de la expresión." << endl;
             exit(1);
         }
         tb = parseBody();
-        match(Token::RBRACE);
+        match(Token::RCBRACE);
         if (match(Token::ELSE)) {
-            match(Token::LBRACE);
+            match(Token::LCBRACE);
             fb = parseBody();
-            match(Token::RBRACE);
+            match(Token::RCBRACE);
         }
 
         a = new IfStm(e, tb, fb);
     }
     else if (match(Token::WHILE)) {
         e = parseCE();
-        if (!match(Token::LBRACE)) {
+        if (!match(Token::LCBRACE)) {
             cout << "Error: se esperaba '{' después de la expresión." << endl;
             exit(1);
         }
         tb = parseBody();
-        if (!match(Token::RBRACE)) {
+        if (!match(Token::RCBRACE)) {
             cout << "Error: se esperaba '}' al final de la declaración." << endl;
             exit(1);
         }
@@ -216,6 +244,18 @@ Exp* Parser::parseCE() {
     Exp* l = parseBE();
     if (match(Token::LE)) {
         BinaryOp op = LE_OP;
+        Exp* r = parseBE();
+        l = new BinaryExp(l, r, op);
+    }else  if (match(Token::LEEQ)) {
+        BinaryOp op = LEEQ_OP;
+        Exp* r = parseBE();
+        l = new BinaryExp(l, r, op);
+    }else  if (match(Token::GR)) {
+        BinaryOp op = GR_OP;
+        Exp* r = parseBE();
+        l = new BinaryExp(l, r, op);
+    }else  if (match(Token::GREQ)) {
+        BinaryOp op = GREQ_OP;
         Exp* r = parseBE();
         l = new BinaryExp(l, r, op);
     }
@@ -273,6 +313,15 @@ Exp* Parser::parseF() {
     if (match(Token::NUM)) {
         return new NumberExp(stoi(previous->text));
     }
+    else if (match(Token::LBRACE)) {// paresar el array
+        arrExp* arr=new arrExp();
+        while(!match(Token::RBRACE)){
+            arr->elements.push_back(parseCE());
+            match(Token::COMA);
+        }
+        return arr;
+
+    }
     else if (match(Token::STRING)) {
         return new strExp(previous->text);
     }
@@ -294,10 +343,6 @@ Exp* Parser::parseF() {
             match(Token::LPAREN);
             FcallExp* fcall = new FcallExp();
             fcall->nombre = nom;
-
-            if(match(Token::RPAREN)){
-                return fcall;
-            }
             fcall->argumentos.push_back(parseCE());
             while(match(Token::COMA)) {
                 fcall->argumentos.push_back(parseCE());
@@ -305,12 +350,23 @@ Exp* Parser::parseF() {
             match(Token::RPAREN);
             return fcall;
         }
+        if(match(Token::LBRACE)) {
+          accesExp* acc=new accesExp();
+          acc->variable=nom;
+          acc->indexes.push_back(parseCE());
+          match(Token::RBRACE);
+          while(match(Token::LBRACE)){
+              acc->indexes.push_back(parseCE());
+              match(Token::RBRACE);
+          }
+          return acc;
+        }
         else {
             return new IdExp(nom);
             }
     }
     else {
-        cout<<current<<"aaaaa";
+        cout<<current;
         throw runtime_error("Error sintáctico");
     }
 }
